@@ -2,9 +2,9 @@ HOW TO START
 
 You will need 2 PowerShell tabs.
 
-========================
+=======================
 TAB 1 — START THE SERVER
-========================
+=======================
 
 cd path\to\gmail_automation
 
