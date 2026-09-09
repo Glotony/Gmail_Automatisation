@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+
+db.sqlite3
+
+.env
+
+credentials.json
+token.json
+
+.vscode/
+.idea/
+HOWtoSTART.txt
+sendme.json
+
