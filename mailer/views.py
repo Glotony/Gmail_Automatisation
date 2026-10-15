@@ -8,55 +8,45 @@ from rest_framework.views import APIView
 
 from .models import EmailMessage
 from .permissions import HasAPIKey
-from .serializers import (
-    EmailMessageSerializer,
-    SendEmailSerializer,
-)
-from .services import send_email
+from .serializers import EmailMessageSerializer, SendEmailSerializer
+from .services import compose_body, send_email
 
 
 class SendEmailView(APIView):
     permission_classes = [HasAPIKey]
-
-    parser_classes = [
-        JSONParser,
-    ]
-
-    renderer_classes = [
-        JSONRenderer,
-    ]
+    parser_classes = [JSONParser]
+    renderer_classes = [JSONRenderer]
 
     def post(self, request):
-        serializer = SendEmailSerializer(
-            data=request.data
-        )
-
-        serializer.is_valid(
-            raise_exception=True
-        )
-
+        serializer = SendEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
+        recipient = data["recipient"]
+        subject = data["subject"]["text"]
+        body = compose_body(
+            data["application"]["message"],
+            data.get("links", {}),
+        )
+        attachments = data.get("files", {})
+
         email_record = EmailMessage.objects.create(
-            recipient=data["recipient"],
-            subject=data["subject"],
-            message=data["message"],
+            recipient=recipient,
+            subject=subject,
+            message=body,
             status=EmailMessage.Status.FAILED,
         )
 
         try:
             gmail_message_id = send_email(
-                recipient=data["recipient"],
-                subject=data["subject"],
-                body=data["message"],
+                recipient=recipient,
+                subject=subject,
+                body=body,
+                attachments=attachments,
             )
-
         except Exception as exc:
             email_record.error = str(exc)
-            email_record.save(
-                update_fields=["error"]
-            )
-
+            email_record.save(update_fields=["error"])
             return Response(
                 {
                     "status": "failed",
@@ -69,20 +59,17 @@ class SendEmailView(APIView):
         email_record.status = EmailMessage.Status.SENT
         email_record.gmail_message_id = gmail_message_id
         email_record.sent_at = timezone.now()
-
         email_record.save(
-            update_fields=[
-                "status",
-                "gmail_message_id",
-                "sent_at",
-            ]
+            update_fields=["status", "gmail_message_id", "sent_at"]
         )
-
         return Response(
             {
                 "status": "sent",
                 "id": email_record.id,
                 "gmail_message_id": gmail_message_id,
+                "attachments_sent": [
+                    attachment["filename"] for attachment in attachments.values()
+                ],
             },
             status=status.HTTP_201_CREATED,
         )
@@ -90,23 +77,10 @@ class SendEmailView(APIView):
 
 class EmailHistoryView(APIView):
     permission_classes = [HasAPIKey]
-
-    parser_classes = [
-        JSONParser,
-    ]
-
-    renderer_classes = [
-        JSONRenderer,
-    ]
+    parser_classes = [JSONParser]
+    renderer_classes = [JSONRenderer]
 
     def get(self, request):
         messages = EmailMessage.objects.all()
-
-        serializer = EmailMessageSerializer(
-            messages,
-            many=True,
-        )
-
-        return Response(
-            serializer.data
-        )
+        serializer = EmailMessageSerializer(messages, many=True)
+        return Response(serializer.data)

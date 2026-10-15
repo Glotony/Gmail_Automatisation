@@ -26,25 +26,55 @@ python send.py
 
 This will send everything written in sendme.json.
 
-========================
-EDIT THE EMAIL
-==============
+**========================**  
+**EDIT THE EMAIL**  
+**========================**
 
-Before running send.py, accurately change:
+Before running `send.py`, open `sendme.json`.
 
-recipient
-subject
-message
+Replace each `*` with your own information:
 
-inside sendme.json.
+- `recipient` — who will receive the email.
+- `subject` — the email title.
+- `message` — what you want to say.
+- `files` — files you want to attach.
+- `links` — links you want to include.
 
 Example:
 
-{
-  "recipient": "example@gmail.com",
-  "subject": "Hello",
-  "message": "Hello from my automation API!"
-}
+```json
+[
+  {
+    "recipient": "example@gmail.com"
+  },
+  {
+    "subject": {
+      "text": "Hello"
+    }
+  },
+  {
+    "application": {
+      "message": "Hello! This is my email."
+    }
+  },
+  {
+    "files": {
+      "document": "C:\\Users\\YourName\\Documents\\file.pdf"
+    }
+  },
+  {
+    "links": {
+      "website": "https://example.com"
+    }
+  }
+]
+```
+
+**Remember:**
+- Replace the example email, text, file path, and links with your own.
+- The file path must point to a file that exists on your computer.
+- If you do not need attachments or links, remove those sections.
+- Save `sendme.json` before running `python send.py`.
 
 ========================
 GOOGLE AUTHORIZATION

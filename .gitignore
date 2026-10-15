@@ -1,16 +1,33 @@
+# Python virtual environment
 .venv/
+venv/
+
+# Python cache
 __pycache__/
-*.pyc
+*.py[cod]
 
+# Django / local database
 db.sqlite3
+*.sqlite3
 
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
 
+# Google OAuth credentials
 credentials.json
 token.json
 
+# Editors
 .vscode/
 .idea/
+
+# Local/private configuration
 HOWtoSTART.txt
 sendme.json
+შაბლონი.json
 
+# Logs and test caches
+*.log
+.pytest_cache/
